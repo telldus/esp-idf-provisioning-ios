@@ -51,6 +51,8 @@ public class ESPProvisionManager: NSObject, AVCaptureMetadataOutputObjectsDelega
     private var captureSession: AVCaptureSession!
     private var previewLayer: AVCaptureVideoPreviewLayer?
     
+    public let notificationKeyDeviceDisconnect = Notification.Name("notificationKeyDeviceDisconnect")
+    
     /// Member to access singleton object of class.
     public static let shared = ESPProvisionManager()
     

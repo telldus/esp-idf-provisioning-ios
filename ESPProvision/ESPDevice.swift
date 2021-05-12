@@ -45,10 +45,9 @@ public enum ESPProvisionStatus {
 public protocol ESPDeviceConnectionDelegate {
     /// Get Proof of possession for an `ESPDevice` from object conforming `ESPDeviceConnectionDelegate` protocol.
     ///
-    /// - Parameters:
-    ///  - forDevice: `ESPDevice`for which Proof of possession is needed.
-    ///  - completionHandler:  Call this method to return POP needed for initialting session with the device.
-    func getProofOfPossesion(forDevice: ESPDevice, completionHandler: @escaping (String) -> Void)
+    /// - Parameter forDevice: `ESPDevice`for which Proof of possession is needed.
+    /// - Returns: Proof of possesion string.
+    func getProofOfPossesion(forDevice: ESPDevice) -> String?
 }
 
 /// The `ESPDevice` class is the main inteface for managing a device. It encapsulates method and properties
@@ -87,7 +86,7 @@ public class ESPDevice {
     private var transportLayer: ESPCommunicable!
     private var provision: ESPProvision!
     private var softAPPassword:String?
-    private var proofOfPossession:String?
+    public  var proofOfPossession:String?
     private var retryScan = false
     
     /// Get name of current `ESPDevice`.
@@ -203,7 +202,7 @@ public class ESPDevice {
     ///     - completionHandler: The completion handler that is called when data transmission is successful.
     ///                          Parameter of block include response received from the HTTP request or error if any.
     public func sendData(path:String, data:Data, completionHandler: @escaping (Data?, ESPSessionError?) -> Swift.Void) {
-        if session == nil || !session.isEstablished {
+        if session == nil, !session.isEstablished {
             completionHandler(nil,.sessionNotEstablished)
         } else {
             self.sendDataToDevice(path: path, data: data, retryOnce: true, completionHandler: completionHandler)
@@ -399,27 +398,20 @@ public class ESPDevice {
         case .secure:
             var pop:String!
             if let capability = self.capabilities, capability.contains(ESPConstants.noProofCapability) {
-                initSecureSession(pop: "", completionHandler: completionHandler)
+                pop = ""
             } else {
                 if self.proofOfPossession == nil {
-                    delegate?.getProofOfPossesion(forDevice: self, completionHandler: { popString in
-                        self.initSecureSession(pop: popString, completionHandler: completionHandler)
-                    })
+                    pop = delegate?.getProofOfPossesion(forDevice: self) ?? ""
                 } else {
                     pop = self.proofOfPossession ?? ""
-                    self.initSecureSession(pop: pop, completionHandler: completionHandler)
                 }
             }
+            ESPLog.log("Initialise session security 1")
+            securityLayer = ESPSecurity1(proofOfPossession: pop)
         case .unsecure:
             ESPLog.log("Initialise session security 0")
             securityLayer = ESPSecurity0()
-            initSession(completionHandler: completionHandler)
         }
-    }
-    
-    private func initSecureSession(pop: String, completionHandler: @escaping (ESPSessionStatus) -> Void) {
-        ESPLog.log("Initialise session security 1")
-        securityLayer = ESPSecurity1(proofOfPossession: pop)
         initSession(completionHandler: completionHandler)
     }
     
@@ -445,7 +437,7 @@ public class ESPDevice {
         }
     }
     
-    /// Get device version information.
+    /// Get device version information`.
     ///
     /// - Parameter completionHandler: Invoked when error is encountered while getting device version.
     private func getDeviceVersionInfo(completionHandler: @escaping (ESPSessionStatus) -> Void) {

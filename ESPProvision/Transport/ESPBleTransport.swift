@@ -294,7 +294,10 @@ extension ESPBleTransport: CBCentralManagerDelegate {
 
     func centralManager(_: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         ESPLog.log("Disconnected with peripheral")
-        delegate?.peripheralDisconnected(peripheral: peripheral, error: error)
+        if currentRequestCompletionHandler != nil {
+            NotificationCenter.default.post(name: ESPProvisionManager.shared.notificationKeyDeviceDisconnect, object: nil)
+            delegate?.peripheralDisconnected(peripheral: peripheral, error: error)
+        }
     }
 }
 

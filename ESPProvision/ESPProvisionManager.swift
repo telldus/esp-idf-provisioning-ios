@@ -228,7 +228,7 @@ public class ESPProvisionManager: NSObject, AVCaptureMetadataOutputObjectsDelega
     /// - Parameter code: Scanned string.
     private func parseQrCode(code: String) {
         
-        ESPLog.log("Parsing QR code response...code:\(code)")
+        ESPLog.log("TEST Parsing QR code response...code:\(code)")
         
         if let jsonArray = try? JSONSerialization.jsonObject(with: Data(code.utf8), options: []) as? [String: String] {
             if let deviceName = jsonArray["name"], let transportInfo = jsonArray["transport"] {

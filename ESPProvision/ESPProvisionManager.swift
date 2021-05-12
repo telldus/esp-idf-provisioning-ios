@@ -250,6 +250,28 @@ public class ESPProvisionManager: NSObject, AVCaptureMetadataOutputObjectsDelega
         ESPLog.log("Invalid QR code.")
         scanCompletionHandler?(nil,.invalidQRCode)
     }
+
+    /// This handles our malformed, pre-production JSON
+    /// Replaces the comma(,) after "ver" with a colon(:)
+    ///
+    /// - Parameter code: Scanned string.
+    private func prepareQrCode(code: String) -> String {
+        print("TEST code \(code)")
+        var preparedString: String = "";
+        do {
+                try JSONSerialization.jsonObject(with: Data(code.utf8), options: []) as? [String: String]
+                preparedString = code;
+            } catch {
+                print("TEST CATCH BLOCK ")
+                if let range = code.range(of: ","){
+                    preparedString = code.replacingCharacters(in: range, with: ":")
+                } else {
+                    preparedString = code;
+                }
+            }
+        print("TEST preparedString \(preparedString)")
+        return preparedString;
+    }
         
     /// Manually create `ESPDevice` object.
     ///

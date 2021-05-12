@@ -86,7 +86,7 @@ public class ESPDevice {
     private var transportLayer: ESPCommunicable!
     private var provision: ESPProvision!
     private var softAPPassword:String?
-    private var proofOfPossession:String?
+    public  var proofOfPossession:String?
     private var retryScan = false
     
     /// Get name of current `ESPDevice`.

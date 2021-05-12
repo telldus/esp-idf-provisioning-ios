@@ -227,10 +227,12 @@ public class ESPProvisionManager: NSObject, AVCaptureMetadataOutputObjectsDelega
     ///
     /// - Parameter code: Scanned string.
     private func parseQrCode(code: String) {
-        
+            
         ESPLog.log("TEST Parsing QR code response...code:\(code)")
-        
-        if let jsonArray = try? JSONSerialization.jsonObject(with: Data(code.utf8), options: []) as? [String: String] {
+
+        let _code = prepareQrCode(code);
+
+        if let jsonArray = try? JSONSerialization.jsonObject(with: Data(_code.utf8), options: []) as? [String: String] {
             if let deviceName = jsonArray["name"], let transportInfo = jsonArray["transport"] {
                 if (transportInfo.lowercased() == "softap" || transportInfo.lowercased() == "ble"){
                     let transport:ESPTransport = transportInfo.lowercased() == "softap" ? .softap:.ble
@@ -255,21 +257,18 @@ public class ESPProvisionManager: NSObject, AVCaptureMetadataOutputObjectsDelega
     /// Replaces the comma(,) after "ver" with a colon(:)
     ///
     /// - Parameter code: Scanned string.
-    private func prepareQrCode(code: String) -> String {
-        print("TEST code \(code)")
+    private func prepareQrCode(_ code: String) -> String {
         var preparedString: String = "";
         do {
                 try JSONSerialization.jsonObject(with: Data(code.utf8), options: []) as? [String: String]
                 preparedString = code;
             } catch {
-                print("TEST CATCH BLOCK ")
                 if let range = code.range(of: ","){
                     preparedString = code.replacingCharacters(in: range, with: ":")
                 } else {
                     preparedString = code;
                 }
             }
-        print("TEST preparedString \(preparedString)")
         return preparedString;
     }
         
